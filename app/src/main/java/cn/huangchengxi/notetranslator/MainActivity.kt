@@ -3,33 +3,59 @@ package cn.huangchengxi.notetranslator
 import android.media.MediaPlayer
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.SpannableStringBuilder
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
+import android.widget.TextView
 import androidx.annotation.RawRes
+import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.lang.Exception
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
     private var player:MediaPlayer?=null
-    private val players=ArrayList<MediaPlayer>()
-    private val notes=ArrayList<String>()
+    private val players=ConcurrentLinkedQueue<MediaPlayer>()
+    private val notes=ArrayList<Clap>()
     private val adapter=NoteAdapter(notes)
     private val layoutManager by lazy { LinearLayoutManager(this) }
     private val noteList by lazy { findViewById<RecyclerView>(R.id.notes_recycler_view) }
     private val noteViews=ArrayList<NoteView>()
-    private val noteViewHolder=NoteViewHolder(noteViews)
     private var playThread:Thread?=null
+    private val toolbar by lazy { findViewById<Toolbar>(R.id.toolbar) }
+    private val clapText by lazy { findViewById<TextView>(R.id.clap) }
+    private val nextClapBtn by lazy { findViewById<Button>(R.id.next_clap) }
+    private val insertSpace by lazy { findViewById<Button>(R.id.space_key) }
+    private var currentClap = P14
+    private var currentNoteClap=0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        setupToolbar()
         setupList()
         init()
+        initToolWidget()
+    }
+    private fun initToolWidget(){
+        nextClapBtn.setOnClickListener {
+            currentNoteClap++
+        }
+        insertSpace.setOnClickListener {
+            notes.add(Clap(currentNoteClap,"Space"))
+            adapter.notifyItemInserted(notes.size-1)
+            noteList.smoothScrollToPosition(notes.size-1)
+        }
+    }
+    private fun setupToolbar(){
+        setSupportActionBar(toolbar)
+        supportActionBar?.title=SpannableStringBuilder("")
+        clapText.text=SpannableStringBuilder("1/4拍")
     }
     @RawRes
     private fun findRawRes(note:String):Int{
@@ -43,7 +69,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupList(){
         adapter.setContainerListener {
             val note=notes[it]
-            val res=findRawRes(note)
+            val res=findRawRes(note.clapName)
             val player=MediaPlayer.create(this,res)
             player.setOnCompletionListener {    p->
                 players.remove(p)
@@ -58,7 +84,6 @@ class MainActivity : AppCompatActivity() {
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder
             ): Int {
-                //val dragFlag=ItemTouchHelper.UP.or(ItemTouchHelper.DOWN)
                 val swipeFlag=ItemTouchHelper.LEFT.or(ItemTouchHelper.RIGHT)
                 return makeMovementFlags(0,swipeFlag)
             }
@@ -73,6 +98,9 @@ class MainActivity : AppCompatActivity() {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 adapter.onItemDismiss(viewHolder.adapterPosition)
+                if (notes[notes.size-1].clapId<currentNoteClap){
+                    currentNoteClap=notes[notes.size-1].clapId
+                }
             }
 
         })
@@ -244,7 +272,7 @@ class MainActivity : AppCompatActivity() {
         players.add(player!!)
         player!!.start()
 
-        notes.add((view as Button).text.toString())
+        notes.add(Clap(currentNoteClap,(view as Button).text.toString()))
         adapter.notifyItemInserted(notes.size-1)
         noteList.smoothScrollToPosition(notes.size-1)
     }
@@ -252,23 +280,80 @@ class MainActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.main,menu)
         return true
     }
-
+    private fun calculateSleepTime():Int{
+        val clapTime= CLAP_TIME
+        return when (currentClap){
+            P14->{
+                ((clapTime.toFloat()*0.75f)/2.0f).toInt()
+            }
+            P24->{
+                ((clapTime.toFloat()*0.5f)/3.0f).toInt()
+            }
+            P34->{
+                ((clapTime.toFloat()*0.25f)/4.0f).toInt()
+            }
+            P44->{
+                0
+            }
+            else -> 0
+        }
+    }
+    private fun calculateSingleClapTime():Int{
+        val clapTime= CLAP_TIME
+        return when (currentClap){
+            P14->{
+                ((clapTime.toFloat()*0.75f)).toInt()
+            }
+            P24->{
+                ((clapTime.toFloat()*0.5f)).toInt()
+            }
+            P34->{
+                ((clapTime.toFloat()*0.25f)).toInt()
+            }
+            P44->{
+                clapTime
+            }
+            else -> clapTime
+        }
+    }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId){
             R.id.play_menu->{
+                if (notes.size<=0) return true
+
                 playThread=thread(start = true) {
                     try {
-                        val current=ArrayList<String>()
+                        val clapTime=calculateSingleClapTime()
+                        val sleepTime=calculateSleepTime()
+                        val current=ArrayList<Clap>()
                         current.addAll(notes)
-                        for (c in current){
-                            val res=findRawRes(c)
-                            player= MediaPlayer.create(this,res)
-                            players.add(player!!)
-                            player!!.setOnCompletionListener {
-                                players.remove(it)
+                        val song=ArrayList<ArrayList<Clap>>()
+                        var currentA: ArrayList<Clap>?=null
+                        var cc=-1
+                        for (clap in notes){
+                            if (clap.clapId==cc){
+                                currentA!!.add(clap)
+                            }else{
+                                currentA=ArrayList()
+                                song.add(currentA)
+                                currentA.add(clap)
+                                cc=clap.clapId
                             }
-                            player!!.start()
-                            Thread.sleep(500)
+                        }
+                        for (s in song){
+                            Thread.sleep(sleepTime.toLong())
+                            for (clap in s){
+                                if (clap.clapName=="Space"){
+                                    Thread.sleep(clapTime.toLong())
+                                    continue
+                                }
+                                val res=findRawRes(clap.clapName)
+                                player=MediaPlayer.create(this,res)
+                                players.add(player!!)
+                                player!!.start()
+                                val sleept=clapTime/s.size
+                                Thread.sleep(sleept.toLong())
+                            }
                         }
                     }catch (e:Exception){
                         e.printStackTrace()
@@ -282,6 +367,30 @@ class MainActivity : AppCompatActivity() {
                 adapter.notifyItemRangeRemoved(0,notes.size)
                 notes.clear()
             }
+            R.id.p14->{
+                clapText.text=SpannableStringBuilder("1/4拍")
+                currentClap= P14
+            }
+            R.id.p24->{
+                clapText.text=SpannableStringBuilder("2/4拍")
+                currentClap= P24
+            }
+            R.id.p34->{
+                clapText.text=SpannableStringBuilder("3/4拍")
+                currentClap= P34
+            }
+            R.id.p44->{
+                clapText.text=SpannableStringBuilder("4/4拍")
+                currentClap=P44
+            }
+            R.id.duration->{
+                val dialog=InputDialog(this)
+                dialog.setOnFinishedInputListener {
+                    CLAP_TIME=it.toInt()
+                }
+                dialog.setInputText(CLAP_TIME.toString())
+                dialog.show()
+            }
         }
         return true
     }
@@ -292,5 +401,12 @@ class MainActivity : AppCompatActivity() {
         }
         playThread?.interrupt()
         super.onDestroy()
+    }
+    companion object{
+        private val P14=0
+        private val P24=1
+        private val P34=2
+        private val P44=3
+        private var CLAP_TIME=2000
     }
 }

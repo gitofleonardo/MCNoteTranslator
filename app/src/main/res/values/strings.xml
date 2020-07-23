@@ -3,4 +3,13 @@
     <string name="play">Play</string>
     <string name="stop">Stop</string>
     <string name="clearall">ClearAll</string>
+    <string name="p34">3/4拍</string>
+    <string name="p44">4/4拍</string>
+    <string name="p24">2/4拍</string>
+    <string name="p14">1/4拍</string>
+    <string name="next_clap">下一拍</string>
+    <string name="space">空键</string>
+    <string name="single_duration">单节时长</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
 </resources>

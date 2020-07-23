@@ -9,4 +9,5 @@ class NoteHolder(view:View):RecyclerView.ViewHolder(view) {
     val note by lazy { view.findViewById<TextView>(R.id.note) }
     val count by lazy { view.findViewById<TextView>(R.id.note_count) }
     val container by lazy { view.findViewById<FrameLayout>(R.id.item_container) }
+    val clap by lazy { view.findViewById<TextView>(R.id.note_clap) }
 }

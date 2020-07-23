@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item android:id="@+id/clear_all" android:title="@string/clearall" android:icon="@drawable/clear_b" app:showAsAction="ifRoom"/>
-    <item android:id="@+id/play_menu" android:title="@string/play" android:icon="@drawable/play" app:showAsAction="ifRoom"/>
+    <group>
+        <item android:title="@string/p14" android:id="@+id/p14"/>
+        <item android:title="@string/p24" android:id="@+id/p24"/>
+        <item android:title="@string/p34" android:id="@+id/p34"/>
+        <item android:title="@string/p44" android:id="@+id/p44"/>
+        <item android:title="@string/single_duration" android:id="@+id/duration"/>
+    </group>
+    <item android:id="@+id/clear_all" android:title="@string/clearall" android:icon="@drawable/clear_b" app:showAsAction="always"/>
+    <item android:id="@+id/play_menu" android:title="@string/play" android:icon="@drawable/play" app:showAsAction="always"/>
     <item android:id="@+id/pause_menu" android:title="@string/stop" android:icon="@drawable/stop" app:showAsAction="always"/>
 </menu>

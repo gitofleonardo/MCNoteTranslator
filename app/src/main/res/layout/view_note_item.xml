@@ -22,12 +22,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     </LinearLayout>
-    <TextView
-        android:layout_marginEnd="10dp"
-        android:text="10"
+    <LinearLayout
         android:layout_gravity="end|center"
-        android:id="@+id/note_count"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginRight="10dp" />
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_marginRight="20dp"
+            android:text="23"
+            android:id="@+id/note_clap"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"/>
+        <TextView
+            android:layout_marginEnd="10dp"
+            android:text="10"
+            android:layout_gravity="end|center"
+            android:id="@+id/note_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp" />
+    </LinearLayout>
 </FrameLayout>
