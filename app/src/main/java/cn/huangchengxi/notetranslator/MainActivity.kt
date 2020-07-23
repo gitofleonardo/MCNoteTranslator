@@ -8,6 +8,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import androidx.annotation.RawRes
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.lang.Exception
@@ -52,6 +53,30 @@ class MainActivity : AppCompatActivity() {
         }
         noteList.adapter=adapter
         noteList.layoutManager=layoutManager
+        val touchHelper=ItemTouchHelper(object : ItemTouchHelper.Callback() {
+            override fun getMovementFlags(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder
+            ): Int {
+                //val dragFlag=ItemTouchHelper.UP.or(ItemTouchHelper.DOWN)
+                val swipeFlag=ItemTouchHelper.LEFT.or(ItemTouchHelper.RIGHT)
+                return makeMovementFlags(0,swipeFlag)
+            }
+
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                adapter.onItemDismiss(viewHolder.adapterPosition)
+            }
+
+        })
+        touchHelper.attachToRecyclerView(noteList)
     }
     private fun init(){
         noteViews.add(NoteView(R.id.l1,R.raw.cs,this))

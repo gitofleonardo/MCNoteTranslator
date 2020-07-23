@@ -35,4 +35,8 @@ class NoteAdapter(private val notes:ArrayList<String>):RecyclerView.Adapter<Note
     fun setContainerListener(listener:((Int)->Unit)?){
         this.containerListener=listener
     }
+    fun onItemDismiss(position:Int){
+        notes.removeAt(position)
+        notifyItemRemoved(position)
+    }
 }
