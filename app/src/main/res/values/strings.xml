@@ -12,4 +12,5 @@
     <string name="single_duration">单节时长</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
+    <string name="next_step">下一节</string>
 </resources>

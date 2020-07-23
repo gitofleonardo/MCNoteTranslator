@@ -26,10 +26,12 @@ class MainActivity : AppCompatActivity() {
     private val layoutManager by lazy { LinearLayoutManager(this) }
     private val noteList by lazy { findViewById<RecyclerView>(R.id.notes_recycler_view) }
     private val noteViews=ArrayList<NoteView>()
+    private var currentClapsCnt=0
     private var playThread:Thread?=null
     private val toolbar by lazy { findViewById<Toolbar>(R.id.toolbar) }
     private val clapText by lazy { findViewById<TextView>(R.id.clap) }
     private val nextClapBtn by lazy { findViewById<Button>(R.id.next_clap) }
+    //private val nextStepBtn by lazy { findViewById<Button>(R.id.next_step) }
     private val insertSpace by lazy { findViewById<Button>(R.id.space_key) }
     private var currentClap = P14
     private var currentNoteClap=0
@@ -284,13 +286,13 @@ class MainActivity : AppCompatActivity() {
         val clapTime= CLAP_TIME
         return when (currentClap){
             P14->{
-                ((clapTime.toFloat()*0.75f)/2.0f).toInt()
+                ((clapTime.toFloat()*0.75f)).toInt()/2
             }
             P24->{
-                ((clapTime.toFloat()*0.5f)/3.0f).toInt()
+                ((clapTime.toFloat()*0.5f)).toInt()/3
             }
             P34->{
-                ((clapTime.toFloat()*0.25f)/4.0f).toInt()
+                ((clapTime.toFloat()*0.25f)).toInt()/4
             }
             P44->{
                 0
@@ -302,16 +304,16 @@ class MainActivity : AppCompatActivity() {
         val clapTime= CLAP_TIME
         return when (currentClap){
             P14->{
-                ((clapTime.toFloat()*0.75f)).toInt()
-            }
-            P24->{
-                ((clapTime.toFloat()*0.5f)).toInt()
-            }
-            P34->{
                 ((clapTime.toFloat()*0.25f)).toInt()
             }
+            P24->{
+                ((clapTime.toFloat()*0.5f)).toInt()/2
+            }
+            P34->{
+                ((clapTime.toFloat()*0.75f)).toInt()/3
+            }
             P44->{
-                clapTime
+                clapTime/4
             }
             else -> clapTime
         }
